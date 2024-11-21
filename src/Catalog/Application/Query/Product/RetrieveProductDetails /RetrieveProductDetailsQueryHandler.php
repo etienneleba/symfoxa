@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Query\Product\RetrieveProductDetails;
+namespace App\Catalog\Application\Query\Product\RetrieveProductDetails ;
 
 class RetrieveProductDetailsQueryHandler implements CommandHandler
 {

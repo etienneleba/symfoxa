@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Command\Product\AddProductToBasket;
+namespace App\Catalog\Application\Command\Product\AddProductToBasket;
 
 readonly class AddProductToBasketCommand {
 

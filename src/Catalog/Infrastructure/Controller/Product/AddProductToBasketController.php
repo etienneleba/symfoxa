@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Infrastructure\Controller\Product;
+namespace App\Catalog\Infrastructure\Controller\Product;
 
+use App\Infrastructure\Controller\Product\CommandBus;
 use Gazprom\Application\Command\Product\AddProductToBasket\AddProductToBasketCommand;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Routing\Attribute\Route;
+
 class AddProductToBasketController
 {
     public function __construct(
