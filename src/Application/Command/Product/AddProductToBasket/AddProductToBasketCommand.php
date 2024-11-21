@@ -1,6 +1,6 @@
 <?php
 
-namespace Gazprom\Application\Command\Product\AddProductToBasket;
+namespace App\Application\Command\Product\AddProductToBasket;
 
 readonly class AddProductToBasketCommand {
 

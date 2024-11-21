@@ -5,7 +5,7 @@ namespace App\Infrastructure\Controller\Product;
 use Gazprom\Application\Command\Product\AddProductToBasket\AddProductToBasketCommand;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-class AddProductToBasketFolder
+class AddProductToBasketController
 {
     public function __construct(
         private CommandBus $commandBus
