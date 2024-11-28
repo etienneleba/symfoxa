@@ -1,5 +1,8 @@
 services:
   php:
+    build:
+      context: .
+      target: frankenphp_dev
     restart: unless-stopped
     environment:
       SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
