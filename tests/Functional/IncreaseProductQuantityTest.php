@@ -22,7 +22,7 @@ class IncreaseProductQuantityTest extends TestCase
         $this->inMemoryCustomerRepository = new InMemoryCustomerRepository([]);
     }
 
-    public function testIncreaseProductQuantity(): void
+    public function testIncreaseProductQuantityOf1(): void
     {
         // Arrange
         $productId = "1";
@@ -54,6 +54,44 @@ class IncreaseProductQuantityTest extends TestCase
         // Assert
         $expectedBasket = (new BasketBuilder())
             ->setEntries([$productId => 2])
+            ->buildSnapshot();
+
+
+        $this->assertEquals($expectedBasket, $this->inMemoryBasketRepository->basketSnapshots[$basketId]);
+    }
+
+    public function testIncreaseProductQuantityOf3(): void
+    {
+        // Arrange
+        $productId = "1";
+        $productSnapshot = (new ProductBuilder())
+            ->setId($productId)
+            ->buildSnapshot();
+        $basketId = "1";
+        $basketSnapshot = (new BasketBuilder())
+            ->setId("1")
+            ->addEntry("1", 1)
+            ->buildSnapshot();
+        $customerId = "1";
+        $customerSnapshot = (new CustomerBuilder())
+            ->setId("1")
+            ->buildSnapshot();
+
+        $this->inMemoryProductRepository = new InMemoryProductRepository([$productSnapshot->id => $productSnapshot]);
+        $this->inMemoryBasketRepository = new InMemoryBasketRepository([$basketSnapshot->id => $basketSnapshot]);
+        $this->inMemoryCustomerRepository = new InMemoryCustomerRepository([$customerSnapshot->id => $customerSnapshot]);
+
+        // Act
+        $commandHandler = new IncreaseProductQuantityCommandHandler(
+            $this->inMemoryBasketRepository,
+            $this->inMemoryProductRepository,
+            $this->inMemoryCustomerRepository
+        );
+        $commandHandler(new IncreaseProductQuantityCommand(customerId: $customerId, basketId: $basketId, productId: $productId, quantity: 3));
+
+        // Assert
+        $expectedBasket = (new BasketBuilder())
+            ->setEntries([$productId => 4])
             ->buildSnapshot();
 
 
