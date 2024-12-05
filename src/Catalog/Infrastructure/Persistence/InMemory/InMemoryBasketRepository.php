@@ -25,9 +25,8 @@ class InMemoryBasketRepository implements BasketRepository
 
     public function save(Basket $basket): void
     {
-        $basketSnapshot = $basket->getSnapshot();
-        $this->basketSnapshots[$basketSnapshot->id] = $basketSnapshot;
+        $snapshot = $basket->toSnapshot();
+        $this->basketSnapshots[$snapshot->id] = $snapshot;
     }
-
 
 }

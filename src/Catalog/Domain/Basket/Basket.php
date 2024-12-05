@@ -37,7 +37,7 @@ class Basket
 
     }
 
-    public function getSnapshot(): BasketSnapshot
+    public function toSnapshot(): BasketSnapshot
     {
         return new BasketSnapshot(
             $this->id,
