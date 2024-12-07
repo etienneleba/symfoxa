@@ -10,6 +10,7 @@
 ###< symfony/framework-bundle ###
 
 .idea
+milow.config.json
 
 ###> symfony/phpunit-bridge ###
 .phpunit.result.cache
