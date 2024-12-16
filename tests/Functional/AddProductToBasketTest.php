@@ -4,11 +4,18 @@ namespace App\Tests\Functional;
 
 use App\Catalog\Application\Command\AddProductToBasket\AddProductToBasketCommand;
 use App\Catalog\Application\Command\AddProductToBasket\AddProductToBasketCommandHandler;
+use App\Catalog\Domain\Basket\BasketRepository;
 use App\Catalog\Domain\Customer\CustomerNotFound;
+use App\Catalog\Domain\Customer\CustomerRepository;
 use App\Catalog\Domain\Product\ProductNotFound;
+use App\Catalog\Domain\Product\ProductRepository;
 use App\Catalog\Infrastructure\Persistence\InMemory\InMemoryBasketRepository;
 use App\Catalog\Infrastructure\Persistence\InMemory\InMemoryCustomerRepository;
 use App\Catalog\Infrastructure\Persistence\InMemory\InMemoryProductRepository;
+use App\Common\RecordReplay\Generator;
+use App\Common\RecordReplay\Mode;
+use App\Common\RecordReplay\RecordReplayController;
+use App\Common\RecordReplay\RecordReplayGenericDecorator;
 use App\Tests\Builder\BasketBuilder;
 use App\Tests\Builder\CustomerBuilder;
 use App\Tests\Builder\ProductBuilder;
@@ -16,15 +23,26 @@ use PHPUnit\Framework\TestCase;
 
 class AddProductToBasketTest extends TestCase
 {
-    private InMemoryBasketRepository $inMemoryBasketRepository;
-    private InMemoryProductRepository $inMemoryProductRepository;
-    private InMemoryCustomerRepository $inMemoryCustomerRepository;
+    private InMemoryBasketRepository|BasketRepository $inMemoryBasketRepository;
+    private InMemoryProductRepository|ProductRepository $inMemoryProductRepository;
+    private InMemoryCustomerRepository|CustomerRepository $inMemoryCustomerRepository;
+    private RecordReplayController $recordReplayController;
+    private Generator $generator;
 
     protected function setUp(): void {
-        $this->inMemoryBasketRepository = new InMemoryBasketRepository([]);
-        $this->inMemoryProductRepository = new InMemoryProductRepository([]);
-        $this->inMemoryCustomerRepository = new InMemoryCustomerRepository([]);
+        $this->recordReplayController  = new RecordReplayController();
+        $this->recordReplayController->start("./tests/Functional/records/records_".$this->getName(). ".json", Mode::REPLAY);
+        $this->generator = new Generator($this->recordReplayController);
+        $this->inMemoryBasketRepository = $this->generator->createProxy(new InMemoryBasketRepository([]));
+        $this->inMemoryProductRepository = $this->generator->createProxy(new InMemoryProductRepository([]));
+        $this->inMemoryCustomerRepository = $this->generator->createProxy(new InMemoryCustomerRepository([]));
     }
+
+    protected function tearDown(): void
+    {
+        $this->recordReplayController->save();
+    }
+
 
     public function testAddAProductToTheBasket(): void
     {
@@ -111,7 +129,7 @@ class AddProductToBasketTest extends TestCase
         $basketSnapshot = (new BasketBuilder())
             ->setId($basketId)
             ->buildSnapshot();
-        $this->inMemoryBasketRepository = new InMemoryBasketRepository([$basketSnapshot->id => $basketSnapshot]);
+        $this->inMemoryBasketRepository->setBasketSnapshots([$basketSnapshot->id => $basketSnapshot]);
     }
 
     private function givenABasketWithOneProductExists(string $basketId, string $productId)
@@ -120,12 +138,12 @@ class AddProductToBasketTest extends TestCase
             ->setId($basketId)
             ->setEntries([$productId => 1])
             ->buildSnapshot();
-        $this->inMemoryBasketRepository = new InMemoryBasketRepository([$basketSnapshot->id => $basketSnapshot]);
+        $this->inMemoryBasketRepository->setBasketSnapshots([$basketSnapshot->id => $basketSnapshot]);
     }
 
     private function givenNoProductExists(): void
     {
-        $this->inMemoryProductRepository = new InMemoryProductRepository([]);
+        $this->inMemoryProductRepository->setProductSnapshots([]);
     }
 
     private function givenAProductExists(string $productId)
@@ -134,18 +152,18 @@ class AddProductToBasketTest extends TestCase
             ->setId($productId)
             ->buildSnapshot();
 
-        $this->inMemoryProductRepository = new InMemoryProductRepository([$productSnapshot->id => $productSnapshot]);
+        $this->inMemoryProductRepository->setProductSnapshots([$productSnapshot->id => $productSnapshot]);
     }
 
 
     private function givenNoCustomerExists(): void
     {
-        $this->inMemoryCustomerRepository = new InMemoryCustomerRepository([]);
+        $this->inMemoryCustomerRepository->setCustomerSnapshots([]);
     }
 
     private function givenNoBasketExists(): void
     {
-        $this->inMemoryBasketRepository = new InMemoryBasketRepository([]);
+        $this->inMemoryBasketRepository->setBasketSnapshots([]);
     }
 
     private function givenACustomerExists(string $customerId)
@@ -153,7 +171,7 @@ class AddProductToBasketTest extends TestCase
         $customerSnapshot = (new CustomerBuilder())
             ->setId($customerId)
             ->buildSnapshot();
-        $this->inMemoryCustomerRepository = new InMemoryCustomerRepository([$customerSnapshot->id => $customerSnapshot]);
+        $this->inMemoryCustomerRepository->setCustomerSnapshots([$customerSnapshot->id => $customerSnapshot]);
     }
 
     /*
@@ -181,7 +199,7 @@ class AddProductToBasketTest extends TestCase
             ->buildSnapshot();
 
 
-        $this->assertEquals($expectedBasket, $this->inMemoryBasketRepository->basketSnapshots[$basketId]);
+        $this->assertEquals($expectedBasket, $this->inMemoryBasketRepository->getBasketSnapshots()[$basketId]);
     }
 
     private function thenTheProductShouldBeTwiceInTheBasket(string $basketId, string $productId): void
@@ -191,7 +209,7 @@ class AddProductToBasketTest extends TestCase
             ->addEntry($productId, quantity: 2)
             ->buildSnapshot();
 
-        $this->assertEquals($expectedBasket, $this->inMemoryBasketRepository->basketSnapshots[$basketId]);
+        $this->assertEquals($expectedBasket, $this->inMemoryBasketRepository->getBasketSnapshots()[$basketId]);
     }
     private function thenIShouldGetAnError(string $error, string $message): void
     {

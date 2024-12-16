@@ -18,5 +18,10 @@ class InMemoryProductRepository implements ProductRepository
         return array_key_exists($productId, $this->productSnapshots);
     }
 
+    public function setProductSnapshots(array $productSnapshots): void
+    {
+        $this->productSnapshots = $productSnapshots;
+    }
+
 
 }

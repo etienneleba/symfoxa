@@ -16,5 +16,10 @@ class InMemoryCustomerRepository implements CustomerRepository
         return array_key_exists($customerId, $this->customerSnapshots);
     }
 
+    public function setCustomerSnapshots(array $customerSnapshots): void
+    {
+        $this->customerSnapshots = $customerSnapshots;
+    }
+
 
 }
